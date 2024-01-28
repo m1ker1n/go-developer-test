@@ -9,7 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 )
 
 const createTransaction = `-- name: CreateTransaction :one
@@ -21,7 +21,7 @@ RETURNING id, time, wallet_from, wallet_to, amount
 type CreateTransactionParams struct {
 	WalletFrom uuid.UUID
 	WalletTo   uuid.UUID
-	Amount     pgtype.Numeric
+	Amount     decimal.Decimal
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {

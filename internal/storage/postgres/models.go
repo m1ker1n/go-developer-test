@@ -7,9 +7,18 @@ package postgres
 import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 )
+
+type Transaction struct {
+	ID         uuid.UUID
+	Time       pgtype.Timestamptz
+	WalletFrom uuid.UUID
+	WalletTo   uuid.UUID
+	Amount     decimal.Decimal
+}
 
 type Wallet struct {
 	ID      uuid.UUID
-	Balance pgtype.Numeric
+	Balance decimal.Decimal
 }

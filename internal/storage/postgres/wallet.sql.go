@@ -9,7 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/shopspring/decimal"
 )
 
 const createWallet = `-- name: CreateWallet :one
@@ -21,7 +21,7 @@ INSERT INTO wallets (
 RETURNING id, balance
 `
 
-func (q *Queries) CreateWallet(ctx context.Context, balance pgtype.Numeric) (Wallet, error) {
+func (q *Queries) CreateWallet(ctx context.Context, balance decimal.Decimal) (Wallet, error) {
 	row := q.db.QueryRow(ctx, createWallet, balance)
 	var i Wallet
 	err := row.Scan(&i.ID, &i.Balance)
@@ -47,7 +47,7 @@ WHERE id = $1
 
 type SetBalanceParams struct {
 	ID      uuid.UUID
-	Balance pgtype.Numeric
+	Balance decimal.Decimal
 }
 
 func (q *Queries) SetBalance(ctx context.Context, arg SetBalanceParams) error {
