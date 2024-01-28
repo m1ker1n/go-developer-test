@@ -11,5 +11,6 @@ var (
 var (
 	ErrWalletFromNotFound = errors.New("source wallet not found")
 	ErrWalletToNotFound   = errors.New("destination wallet not found")
-	ErrNotEnoughMoney     = errors.New("not enough money to send")
+	// Maybe it should be checked in service layer, but I don't know
+	ErrNotEnoughMoney = errors.New("not enough money to send")
 )
