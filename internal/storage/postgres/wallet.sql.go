@@ -39,3 +39,18 @@ func (q *Queries) GetWallet(ctx context.Context, id uuid.UUID) (Wallet, error) {
 	err := row.Scan(&i.ID, &i.Balance)
 	return i, err
 }
+
+const setBalance = `-- name: SetBalance :exec
+UPDATE wallets SET balance = $2
+WHERE id = $1
+`
+
+type SetBalanceParams struct {
+	ID      uuid.UUID
+	Balance pgtype.Numeric
+}
+
+func (q *Queries) SetBalance(ctx context.Context, arg SetBalanceParams) error {
+	_, err := q.db.Exec(ctx, setBalance, arg.ID, arg.Balance)
+	return err
+}
