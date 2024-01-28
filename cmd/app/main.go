@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
-	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
-	"github.com/jackc/pgx/v5"
 	"github.com/m1ker1n/go-developer-test/internal/config"
 	"github.com/m1ker1n/go-developer-test/internal/storage/postgres"
 	"github.com/shopspring/decimal"
@@ -13,43 +11,22 @@ import (
 
 func main() {
 	cfg := config.MustLoad()
-	//TODO: remove printf
-	fmt.Printf("%+v\n", cfg)
 
 	ctx := context.Background()
-	conn, err := pgx.Connect(ctx, cfg.Postgres.ConnectionString)
+	storage, err := postgres.NewStorage(ctx, cfg.Postgres.ConnectionString)
 	if err != nil {
 		panic(err)
 	}
-	defer conn.Close(ctx)
-	pgxdecimal.Register(conn.TypeMap())
+	defer storage.Close(ctx)
 
-	queries := postgres.New(conn)
-
-	balance, err := pgxdecimal.Decimal(decimal.NewFromFloat32(100.333)).NumericValue()
+	wallet, err := storage.CreateWallet(ctx, decimal.NewFromFloat(100.33))
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("%+v\n", wallet)
 
-	createdWallet, err := queries.CreateWallet(ctx, balance)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%+v\n", createdWallet)
-
-	id, uuidErr := uuid.Parse("47e3eca5-5365-458d-8ef3-1f2e7573dfa7")
-	if uuidErr != nil {
-		panic(uuidErr)
-	}
-	gotWallet, err := queries.GetWallet(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-
-	var decimalFromNumeric pgxdecimal.Decimal
-	decimalFromNumericErr := decimalFromNumeric.ScanNumeric(gotWallet.Balance)
-	if decimalFromNumericErr != nil {
-		panic(decimalFromNumericErr)
-	}
-	fmt.Printf("%s", decimal.Decimal(decimalFromNumeric))
+	id, _ := uuid.Parse("194a9fa0-98d3-4443-bf9a-e2f96c39618e")
+	w2, _ := storage.GetWallet(ctx, id)
+	fmt.Printf("%+v\n", w2)
+	fmt.Printf("%s", w2.Balance)
 }
