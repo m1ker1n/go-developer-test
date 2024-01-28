@@ -13,34 +13,34 @@ import (
 )
 
 const createTransaction = `-- name: CreateTransaction :one
-INSERT INTO transactions (wallet_from, wallet_to, amount)
+INSERT INTO transactions (wallet_from_id, wallet_to_id, amount)
 VALUES ($1, $2, $3)
-RETURNING id, time, wallet_from, wallet_to, amount
+RETURNING id, time, wallet_from_id, wallet_to_id, amount
 `
 
 type CreateTransactionParams struct {
-	WalletFrom uuid.UUID
-	WalletTo   uuid.UUID
-	Amount     decimal.Decimal
+	WalletFromID uuid.UUID
+	WalletToID   uuid.UUID
+	Amount       decimal.Decimal
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
-	row := q.db.QueryRow(ctx, createTransaction, arg.WalletFrom, arg.WalletTo, arg.Amount)
+	row := q.db.QueryRow(ctx, createTransaction, arg.WalletFromID, arg.WalletToID, arg.Amount)
 	var i Transaction
 	err := row.Scan(
 		&i.ID,
 		&i.Time,
-		&i.WalletFrom,
-		&i.WalletTo,
+		&i.WalletFromID,
+		&i.WalletToID,
 		&i.Amount,
 	)
 	return i, err
 }
 
 const listTransactionsByWalletId = `-- name: ListTransactionsByWalletId :many
-SELECT id, time, wallet_from, wallet_to, amount
+SELECT id, time, wallet_from_id, wallet_to_id, amount
 FROM transactions
-WHERE (wallet_from = $1 OR wallet_to = $1)
+WHERE (wallet_from_id = $1 OR wallet_to_id = $1)
 ORDER BY time DESC
 `
 
@@ -56,8 +56,8 @@ func (q *Queries) ListTransactionsByWalletId(ctx context.Context, walletID uuid.
 		if err := rows.Scan(
 			&i.ID,
 			&i.Time,
-			&i.WalletFrom,
-			&i.WalletTo,
+			&i.WalletFromID,
+			&i.WalletToID,
 			&i.Amount,
 		); err != nil {
 			return nil, err

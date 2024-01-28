@@ -11,11 +11,11 @@ import (
 )
 
 type Transaction struct {
-	ID         uuid.UUID
-	Time       pgtype.Timestamptz
-	WalletFrom uuid.UUID
-	WalletTo   uuid.UUID
-	Amount     decimal.Decimal
+	ID           uuid.UUID
+	Time         pgtype.Timestamptz
+	WalletFromID uuid.UUID
+	WalletToID   uuid.UUID
+	Amount       decimal.Decimal
 }
 
 type Wallet struct {
