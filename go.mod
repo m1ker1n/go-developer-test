@@ -5,7 +5,9 @@ go 1.21.6
 require (
 	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
+	github.com/jackc/pgx-shopspring-decimal v0.0.0-20220624020537-1d36b5a1853e
 	github.com/jackc/pgx/v5 v5.5.2
+	github.com/shopspring/decimal v1.3.1
 )
 
 require (
