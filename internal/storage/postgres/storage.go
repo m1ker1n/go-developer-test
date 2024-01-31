@@ -130,11 +130,18 @@ func (s *Storage) CreateTransaction(ctx context.Context, from, to uuid.UUID, amo
 }
 
 func (s *Storage) GetTransactions(ctx context.Context, walletId uuid.UUID) ([]models.Transaction, error) {
-	transactions, err := s.queries.ListTransactionsByWalletId(ctx, walletId)
+	//TODO: do I need to open transaction? there's only data read operations
+	_, err := s.queries.GetWallet(ctx, walletId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, storage.ErrWalletNotFound
 		}
+		//TODO: log something wrong happened checking if there's wallet exists
+		return nil, err
+	}
+
+	transactions, err := s.queries.ListTransactionsByWalletId(ctx, walletId)
+	if err != nil {
 		//TODO: log something wrong happened
 		return nil, err
 	}
