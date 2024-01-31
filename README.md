@@ -36,3 +36,15 @@ docker run -d \
  -p 8080:8080 \
  go-developer-test
 ```
+
+# Как мигрировать
+
+```shell
+# Устанавливаем goose 
+go install github.com/pressly/goose/v3/cmd/goose@latest
+# Создаем миграцию
+./cmd/migrator/create_migration.sh 'migration name'
+# В ./migrations появляется файл миграции, описываем изменения
+# Проводим миграцию
+./cmd/migrator/migration_up.sh 'postgresql connection string'
+```
