@@ -43,7 +43,7 @@ func (w *Wallet) GetWallet(ctx context.Context, walletId uuid.UUID) (models.Wall
 		if errors.Is(err, storage.ErrWalletNotFound) {
 			return models.Wallet{}, ErrWalletNotFound
 		}
-		//TODO: log undefiend error getting wallet
+		//TODO: log undefined error getting wallet
 		return models.Wallet{}, ErrWalletUndefined
 	}
 	return wallet, nil
