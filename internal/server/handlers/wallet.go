@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/m1ker1n/go-developer-test/internal/models"
 	"github.com/m1ker1n/go-developer-test/internal/services"
-	"github.com/m1ker1n/go-developer-test/internal/storage"
 	"github.com/shopspring/decimal"
 	"net/http"
 )
@@ -98,7 +97,7 @@ func (w *WalletHandler) GetTransactionHistory(ctx *gin.Context) {
 
 	transactions, err := w.transactionService.GetTransactions(ctx, fromUuid)
 	if err != nil {
-		if errors.Is(err, storage.ErrWalletNotFound) {
+		if errors.Is(err, services.ErrWalletNotFound) {
 			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
