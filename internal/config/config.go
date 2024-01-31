@@ -8,7 +8,7 @@ import (
 type Config struct {
 	HTTP     HTTPConfig     `env-prefix:"HTTP_"`
 	Postgres PostgresConfig `env-prefix:"POSTGRES_"`
-	Wallet   WalletConfig   `env-prefix:"WALLET_" env:"WALLET_INITIAL_BALANCE"`
+	Wallet   WalletConfig   `env-prefix:"WALLET_"`
 }
 
 type HTTPConfig struct {
