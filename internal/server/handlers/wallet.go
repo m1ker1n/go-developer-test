@@ -30,7 +30,7 @@ type WalletHandler struct {
 func (w *WalletHandler) CreateWallet(ctx *gin.Context) {
 	wallet, err := w.walletService.CreateWallet(ctx)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(http.StatusCreated, wallet)
@@ -56,7 +56,7 @@ func (w *WalletHandler) SendMoney(ctx *gin.Context) {
 	var bodyArgs SendMoneyArguments
 	if err := ctx.ShouldBindJSON(&bodyArgs); err != nil {
 		//TODO: something went wrong with binding maybe must be other code
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	toUuid, err := uuid.Parse(bodyArgs.To)
@@ -69,15 +69,15 @@ func (w *WalletHandler) SendMoney(ctx *gin.Context) {
 	_, err = w.transactionService.CreateTransaction(ctx, fromUuid, toUuid, amount)
 	if err != nil {
 		if errors.Is(err, services.ErrTransactionWalletFromNotFound) {
-			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err})
+			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
 		if errors.Is(err, services.ErrNotEnoughMoney) || errors.Is(err, services.ErrTransactionWalletToNotFound) {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -99,11 +99,11 @@ func (w *WalletHandler) GetTransactionHistory(ctx *gin.Context) {
 	transactions, err := w.transactionService.GetTransactions(ctx, fromUuid)
 	if err != nil {
 		if errors.Is(err, storage.ErrWalletNotFound) {
-			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err})
+			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
 
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -125,11 +125,11 @@ func (w *WalletHandler) GetWalletInfo(ctx *gin.Context) {
 	wallet, err := w.walletService.GetWallet(ctx, walletIdUuid)
 	if err != nil {
 		if errors.Is(err, services.ErrWalletNotFound) {
-			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err})
+			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
 
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
