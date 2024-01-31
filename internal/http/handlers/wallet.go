@@ -18,7 +18,7 @@ type walletService interface {
 }
 
 type transactionService interface {
-	CreateTransaction(ctx context.Context, to, from uuid.UUID, amount decimal.Decimal) (models.Transaction, error)
+	CreateTransaction(ctx context.Context, from, to uuid.UUID, amount decimal.Decimal) (models.Transaction, error)
 	GetTransactions(ctx context.Context, walletId uuid.UUID) ([]models.Transaction, error)
 }
 
@@ -66,7 +66,7 @@ func (w *WalletHandler) SendMoney(ctx *gin.Context) {
 	}
 	amount := decimal.NewFromFloat(bodyArgs.Amount)
 
-	_, err = w.transactionService.CreateTransaction(ctx, toUuid, fromUuid, amount)
+	_, err = w.transactionService.CreateTransaction(ctx, fromUuid, toUuid, amount)
 	if err != nil {
 		if errors.Is(err, services.ErrTransactionWalletFromNotFound) {
 			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err})
@@ -111,18 +111,18 @@ func (w *WalletHandler) GetTransactionHistory(ctx *gin.Context) {
 }
 
 func (w *WalletHandler) GetWalletInfo(ctx *gin.Context) {
-	from := ctx.Param("walletId")
-	if from == "" {
+	walletId := ctx.Param("walletId")
+	if walletId == "" {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "source wallet is not provided"})
 		return
 	}
-	fromUuid, err := uuid.Parse(from)
+	walletIdUuid, err := uuid.Parse(walletId)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "couldn't parse source wallet id"})
 		return
 	}
 
-	wallet, err := w.walletService.GetWallet(ctx, fromUuid)
+	wallet, err := w.walletService.GetWallet(ctx, walletIdUuid)
 	if err != nil {
 		if errors.Is(err, services.ErrWalletNotFound) {
 			ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err})

@@ -10,7 +10,7 @@ import (
 )
 
 type transactionStorage interface {
-	CreateTransaction(ctx context.Context, to, from uuid.UUID, amount decimal.Decimal) (models.Transaction, error)
+	CreateTransaction(ctx context.Context, from, to uuid.UUID, amount decimal.Decimal) (models.Transaction, error)
 	GetTransactions(ctx context.Context, walletId uuid.UUID) ([]models.Transaction, error)
 }
 
@@ -29,8 +29,8 @@ func NewTransaction(transactionStorage transactionStorage) *Transaction {
 	return &Transaction{transactionStorage: transactionStorage}
 }
 
-func (t *Transaction) CreateTransaction(ctx context.Context, to, from uuid.UUID, amount decimal.Decimal) (models.Transaction, error) {
-	tr, err := t.transactionStorage.CreateTransaction(ctx, to, from, amount)
+func (t *Transaction) CreateTransaction(ctx context.Context, from, to uuid.UUID, amount decimal.Decimal) (models.Transaction, error) {
+	tr, err := t.transactionStorage.CreateTransaction(ctx, from, to, amount)
 	if err != nil {
 		if errors.Is(err, storage.ErrWalletFromNotFound) {
 			return models.Transaction{}, ErrTransactionWalletFromNotFound
