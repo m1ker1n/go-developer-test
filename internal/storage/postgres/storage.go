@@ -58,11 +58,11 @@ func (s *Storage) GetWallet(ctx context.Context, id uuid.UUID) (models.Wallet, e
 	return models.Wallet(wallet), nil
 }
 
-func (s *Storage) Send(ctx context.Context, from, to uuid.UUID, amount decimal.Decimal) error {
+func (s *Storage) CreateTransaction(ctx context.Context, from, to uuid.UUID, amount decimal.Decimal) (models.Transaction, error) {
 	tx, err := s.conn.Begin(ctx)
 	if err != nil {
 		//TODO: log internal error for transaction
-		return err
+		return models.Transaction{}, err
 	}
 	defer func(tx pgx.Tx, ctx context.Context) {
 		err := tx.Rollback(ctx)
@@ -71,28 +71,29 @@ func (s *Storage) Send(ctx context.Context, from, to uuid.UUID, amount decimal.D
 		}
 	}(tx, ctx)
 
+	var transaction Transaction
 	qtx := s.queries.WithTx(tx)
 	{
 		fromWallet, err := qtx.GetWallet(ctx, from)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				return storage.ErrWalletFromNotFound
+				return models.Transaction{}, storage.ErrWalletFromNotFound
 			}
 			//TODO: log internal error for something else happened
-			return err
+			return models.Transaction{}, err
 		}
 
 		if enoughMoney := fromWallet.Balance.GreaterThanOrEqual(amount); !enoughMoney {
-			return storage.ErrNotEnoughMoney
+			return models.Transaction{}, storage.ErrNotEnoughMoney
 		}
 
 		toWallet, err := qtx.GetWallet(ctx, to)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				return storage.ErrWalletToNotFound
+				return models.Transaction{}, storage.ErrWalletToNotFound
 			}
 			//TODO: log internal error for something else happened
-			return err
+			return models.Transaction{}, err
 		}
 
 		newFromBalance := fromWallet.Balance.Sub(amount)
@@ -102,7 +103,7 @@ func (s *Storage) Send(ctx context.Context, from, to uuid.UUID, amount decimal.D
 		})
 		if err != nil {
 			//TODO: log something happened while setting balance
-			return err
+			return models.Transaction{}, err
 		}
 
 		newToBalance := toWallet.Balance.Add(amount)
@@ -112,20 +113,20 @@ func (s *Storage) Send(ctx context.Context, from, to uuid.UUID, amount decimal.D
 		})
 		if err != nil {
 			//TODO: log something happened while setting balance
-			return err
+			return models.Transaction{}, err
 		}
 
-		_, err = qtx.CreateTransaction(ctx, CreateTransactionParams{
+		transaction, err = qtx.CreateTransaction(ctx, CreateTransactionParams{
 			WalletFromID: fromWallet.ID,
 			WalletToID:   toWallet.ID,
 			Amount:       amount,
 		})
 		if err != nil {
 			//TODO: log something happened while creating transaction
-			return err
+			return models.Transaction{}, err
 		}
 	}
-	return tx.Commit(ctx)
+	return transaction.toModel(), tx.Commit(ctx)
 }
 
 func (s *Storage) GetTransactions(ctx context.Context, walletId uuid.UUID) ([]models.Transaction, error) {
