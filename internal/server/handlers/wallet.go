@@ -60,7 +60,7 @@ func (w *WalletHandler) SendMoney(ctx *gin.Context) {
 	}
 	toUuid, err := uuid.Parse(bodyArgs.To)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "couldn't parse destination wallet id"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "couldn't parse destination wallet id"})
 		return
 	}
 	amount := decimal.NewFromFloat(bodyArgs.Amount)
