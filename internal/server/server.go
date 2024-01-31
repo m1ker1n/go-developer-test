@@ -1,4 +1,4 @@
-package http
+package server
 
 import (
 	"context"
@@ -17,7 +17,7 @@ type Server struct {
 	server http.Server
 }
 
-func NewServer(addr string, walletHandler walletHandler) *Server {
+func New(addr string, walletHandler walletHandler) *Server {
 	router := registerHandlers(walletHandler)
 	return &Server{
 		server: http.Server{

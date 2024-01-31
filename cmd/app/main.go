@@ -2,10 +2,16 @@ package main
 
 import (
 	"context"
+	"errors"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/m1ker1n/go-developer-test/internal/config"
-	"github.com/m1ker1n/go-developer-test/internal/http"
-	"github.com/m1ker1n/go-developer-test/internal/http/handlers"
+	"github.com/m1ker1n/go-developer-test/internal/server"
+	"github.com/m1ker1n/go-developer-test/internal/server/handlers"
 	"github.com/m1ker1n/go-developer-test/internal/services"
 	"github.com/m1ker1n/go-developer-test/internal/storage/postgres"
 )
@@ -25,9 +31,24 @@ func main() {
 
 	walletHandler := handlers.NewWalletHandler(walletService, transactionService)
 
-	server := http.NewServer(cfg.HTTP.Addr(), walletHandler)
+	srv := server.New(cfg.HTTP.Addr(), walletHandler)
 
-	if err := server.Run(); err != nil {
-		panic(err)
+	go func() {
+		if err := srv.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	// kill (no param) default send syscanll.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall. SIGKILL but can"t be catch, so don't need add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	quitSig := <-quit
+	log.Printf("received shutdown signal: %s", quitSig)
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("shutdown: %s\n", err)
 	}
+	log.Println("server exiting")
 }
